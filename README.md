@@ -2,6 +2,8 @@
 
 A 3D fireworks simulator with a "bullet-time" feature. Watch continuous fireworks launch and explode in vibrant colors, then drag to orbit the camera and freeze time — fly around the frozen explosions in slow motion.
 
+[fireworks.webm](https://github.com/user-attachments/assets/e3f58644-1c20-4045-92f4-9014a5336d90)
+
 ## Features
 
 - Continuous fireworks with vibrant HSL-based colors and trailing embers
