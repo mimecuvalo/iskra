@@ -10,7 +10,7 @@ const LAUNCH_SPEED     = [38, 55];
 const LAUNCH_SPREAD    = 40;
 const GRAVITY          = -22;
 const BULLET_TIME_SCALE = 0.03;
-const RESUME_DELAY     = 2;
+const RESUME_DELAY     = 1;
 const EASE_IN_DURATION = 1.5;
 const TRAIL_EMIT_RATE  = 0.012;  // seconds between trail spawns per burst particle
 
