@@ -170,10 +170,8 @@ const fragmentShader = `
   varying float vAlpha;
   void main() {
     float d = length(gl_PointCoord - 0.5);
-    if (d > 0.5) discard;
-    float glow = 1.0 - smoothstep(0.0, 0.5, d);
-    glow = pow(glow, 1.3);
-    gl_FragColor = vec4(vColor * glow * 1.8, vAlpha * glow);
+    if (d > 0.25) discard;
+    gl_FragColor = vec4(vColor * 1.8, vAlpha);
   }
 `;
 
@@ -537,7 +535,8 @@ function updateKeyboardMovement(wallDt) {
   forward.normalize();
   const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
 
-  const speed = PAN_SPEED * wallDt;
+  const dist = camera.position.distanceTo(controls.target);
+  const speed = PAN_SPEED * wallDt * Math.max(0.1, dist / 90);
   const move = new THREE.Vector3();
 
   if (keysDown['KeyW'] || keysDown['ArrowUp'])    move.y += 1;
