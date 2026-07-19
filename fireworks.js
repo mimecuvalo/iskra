@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 // ─── Config ───────────────────────────────────────────────────────
 const LAUNCH_INTERVAL  = [1.0, 2.5];
@@ -13,6 +17,11 @@ const BULLET_TIME_SCALE = 0.03;
 const RESUME_DELAY     = 1;
 const EASE_IN_DURATION = 1.5;
 const TRAIL_EMIT_RATE  = 0.012;  // seconds between trail spawns per burst particle
+
+// Bloom (HDR glow) — strength = intensity, radius = spread, threshold = min luminance to bloom
+const BLOOM_STRENGTH  = 0.9;
+const BLOOM_RADIUS     = 0.55;
+const BLOOM_THRESHOLD  = 0.12;
 
 // ─── Renderer / Scene / Camera ────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -35,6 +44,21 @@ controls.target.set(0, 40, 0);
 controls.minDistance = 10;
 controls.maxDistance = 250;
 controls.maxPolarAngle = Math.PI * 0.92;
+
+// ─── Post-processing (HDR bloom) ──────────────────────────────────
+// RenderPass draws the scene in linear space, UnrealBloomPass adds the
+// glow, OutputPass applies tone mapping + sRGB conversion at the end.
+const composer = new EffectComposer(renderer);
+composer.setPixelRatio(Math.min(devicePixelRatio, 2));
+composer.setSize(innerWidth, innerHeight);
+composer.addPass(new RenderPass(scene, camera));
+
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(innerWidth, innerHeight),
+  BLOOM_STRENGTH, BLOOM_RADIUS, BLOOM_THRESHOLD
+);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
 
 // ─── Ground ──────────────────────────────────────────────────────
 const gridHelper = new THREE.GridHelper(200, 40, 0x111133, 0x111133);
@@ -171,7 +195,7 @@ const fragmentShader = `
   void main() {
     float d = length(gl_PointCoord - 0.5);
     if (d > 0.25) discard;
-    gl_FragColor = vec4(vColor * 1.8, vAlpha);
+    gl_FragColor = vec4(vColor * 1.5, vAlpha);
   }
 `;
 
@@ -558,6 +582,7 @@ window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
 });
 
 // ─── Main loop ───────────────────────────────────────────────────
@@ -588,7 +613,7 @@ function animate() {
 
   updateKeyboardMovement(wallDt);
   controls.update();
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 // initial salvo
